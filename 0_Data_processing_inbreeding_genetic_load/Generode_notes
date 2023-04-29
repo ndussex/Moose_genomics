@@ -1,0 +1,34 @@
+# 1. We used the Generode pipeline (https://github.com/NBISweden/GenErode/wiki) to perfrom the following:
+
+- Raw Data processing, including trimming, mapping, variant calling , quality filtering
+- Downsampling to 7x and heterozygosity estimation 
+- Variant annotation with SNPeff
+
+
+We used all default parameters except for minimum depth of coverage for variant calling which was set at 5X (default 3x; 8.2_vcf_qual_repeat_filtering).
+
+See: 
+
+- https://github.com/NBISweden/GenErode/blob/main/workflow/rules/8.2_vcf_qual_repeat_filtering.smk
+- inside the file look for: rule filter_vcfs_qual_dp (l.237-241)
+
+      # check minimum depth threshold
+        if awk "BEGIN{{exit ! ($minDP < 5)}}"
+        then
+          minDP=5
+        fi
+        
+  
+# 2. ROH identification was ran mnaually after filtering for missing data with the following parameters, such as:
+
+module load plink/1.90b4.9
+
+#removing missing variants and converting to bed format
+plink2 --vcf Moose_87genomes.vcf.gz  --geno 0 --allow-extra-chr --recode vcf --real-ref-alleles --out Moose_87genomes --make-bed
+
+
+#identify ROH
+BED='Moose_87genomes'
+plink --bfile $BED --homozyg --homozyg-window-snp 1000 --homozyg-window-het 1 --homozyg-window-threshold 0.05 --homozyg-snp 25 --homozyg-kb 100  --homozyg-density 50 --homozyg-gap 1000 --homozyg-het 750 --allow-extra-chr --out Moose_87genomes.het1.1000_all_FROH
+
+
