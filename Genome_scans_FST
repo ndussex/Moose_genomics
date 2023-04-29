@@ -1,0 +1,52 @@
+#this is a slurm script that loops over each chromosome to estimate pairwise FST 
+
+#!/bin/bash -l
+#SBATCH -A proj_ID
+#SBATCH -p node -n 2
+#SBATCH -J FST
+#SBATCH -t 7-00:00:00
+
+module load bioinfo-tools
+module load ANGSD/0.933
+
+date
+
+REF='Odocoileus_hemionus_HiC.fasta'
+
+
+# 1. calculate per pop saf for each population
+
+angsd -b North -anc $REF -minMapQ 30 -minQ 30 -out out_files/North -dosaf 1 -gl 1 
+angsd -b South -anc $REF -minMapQ 30 -minQ 30 -out out_files/South -dosaf 1 -gl 1 
+
+#North and South are files listing the bam files for each population in one column e.g.:
+#AC13.merged.rmdup.merged.realn.bam
+#AC2283.merged.rmdup.merged.realn.bam
+#....
+
+# 2. calculate all pairwise 2dsfs's
+#scf.list is a one column list of autosomal scaffolds in 
+
+cat scf.list | while read LINE
+do
+  	realSFS -P 10 -r $LINE out_files/North.saf.idx out_files/South.saf.idx > out_files/North.South.$LINE.ml
+done
+
+
+# 3. prepare the fst for easy window analysis
+cat scf.list | while read LINE
+do
+	realSFS fst index -r $LINE out_files/North.saf.idx out_files/South.saf.idx -sfs out_files/North.South.$LINE.ml -fstout out_files/FST.$LINE
+done
+
+
+# 4. print results in sliding windows
+
+cat scf.list | while read LINE
+do
+	realSFS fst stats2 out_files/FST.$LINE.fst.idx -win 50000 -step 10000 > out_files/FST.$LINE.sliding_window
+done
+
+#concatenate fst files per chromosome
+
+(head -1  out_files/FST.HiC_scaffold_34.sliding_window ; tail -n +2 -q  out_files/*sliding_window* ) > FST_North_South.res
