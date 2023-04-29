@@ -13,4 +13,4 @@ Data analysis was performed using custom codes which include:
 
 3. Genetic load estimates in coding regions (SNPeff)
 
-4. Tests of ourliers detection (ANGSD)
+4. Genome scans (ANGSD)
