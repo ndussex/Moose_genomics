@@ -7,10 +7,10 @@ All data processing was performed using the Generode pipeline (https://github.co
 
 Data analysis was performed using custom codes which include:
 
+0. Data processing, heterozygosity, inbreeding, genetic load (Generode pipeline)
+
 1. population structure analysis (Admixture)
 
 2. demographic analyses (SMC++ anf GONE)
 
-3. Genetic load estimates in coding regions (SNPeff)
-
-4. Genome scans (ANGSD)
+3. Genome scans (ANGSD)
