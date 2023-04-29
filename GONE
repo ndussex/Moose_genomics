@@ -1,0 +1,43 @@
+#GONE
+git clone https://github.com/esrud/GONE.git
+
+cd GONE/Linux
+
+module load bioinfo-tools plink/1.90b4.9
+
+
+#1
+chmod u+r+x PROGRAMMES/*
+
+
+myvcf='Moose_87genomes.vcf.gz'
+North='/proj/snic2020-6-248/nobackup/analyses/Snakemake/GenErode/results/Multi_vcf/mapped_to_moose/North.txt'
+
+#head $North #2 columns with same indivudual ID in both
+
+  #AC13	  AC13
+  #AC2283	AC2283
+  #AC891	AC891
+
+#autosomes (1st column of *fai index)
+scaff='scaf1,scaf2,scaf3'
+
+
+cd GONE/Linux
+
+#convert file
+plink --vcf $myvcf --make-bed  --geno 0 --keep $North --chr $scaff --allow-extra-chr --chr-set 95 --real-ref-alleles -recode --out North_auto_GONE
+
+
+#doesn't like headers such as HiC_scaffold_
+# so replace and only keep scaffold number
+
+perl -pne 's/HiC_scaffold_/\1/' North_auto_GONE.map > North_auto_GONE_2.map
+mv North_auto_GONE_2.map North_auto_GONE.map
+
+#run GONE
+bash script_GONE.sh North_auto_GONE
+
+
+#results
+Output_Ne_North_85_auto_GONE
