@@ -7,7 +7,7 @@ All data processing was performed using the Generode pipeline (https://github.co
 
 Data analysis was performed using custom codes which include:
 
-1. population structure analysis (Admixture and PCA - Plink)
+1. population structure analysis (Admixture)
 
 2. demographic analyses (SMC++ anf GONE)
 
