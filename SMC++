@@ -1,0 +1,42 @@
+##########################
+## 1. Run smc++ vcf2smc ##
+##########################
+
+module load bioinfo-tools SMC++/1.15.4 bcftools biopython htslib tabix BEDTools/2.29.2
+
+
+#exclude historical samples
+bcftools view -Ou -s ^ND041,ND044,ND051,ND053,ND054,ND056,ND058 Moose_87genomes.vcf.gz -O z -o Moose_80genomes.vcf.gz
+
+
+## North
+#################
+merged_vcf="Moose_80genomes.vcf.gz"
+Pop_NORTH="NORTH:Z538,Y3250,Y1186,Y428,Y228,AC933,Z247,AC891,AC13,BD650,BD233,BD791,BD2390,BD3309,BD3306,BD3297,BD3293,BD3298,BD3296,BD502,BD3294,BD3291,BD3315,BD1113,AC2283,BD535,BD684,BD3259,BD3262,BD3169,BD3257,BD612"
+
+while read -a line
+do
+	for i in Z538 Y3250 Y1186 Y428 Y228 AC933 Z247 AC891 AC13 BD650 BD233 BD791 BD2390 BD3309 BD3306 BD3297 BD3293 BD3298 BD3296 BD502 BD3294 BD3291 BD3315 BD1113 AC2283 BD535 BD684 BD3259 BD3262 BD3169 BD3257 BD612
+	do 
+	smc++ vcf2smc --cores 24 --ignore-missing --drop-first-last -d $i $i -c 1000000 $merged_vcf results_pairs/North.smc.$i.${line[0]}.txt ${line[0]} $Pop_NORTH
+	done
+done < chrom_list.txt
+
+
+#######################
+## 2. Run smc++      ##
+#######################
+
+
+#2.1 cross-validation #
+#######################
+
+smc++ cv --base North -o analysis_cv/ 2.5e-8 results_pairs/North* -c 1000000 --timepoints 1e3 1e6 --em-iterations 5000 --thinning 1300 --regularization-penalty 6  --ftol 1e-7 --xtol 1e-7 
+
+
+#######################
+## 3. Plot 			     ##
+#######################
+
+smc++ plot plot.png analysis/*.final.json  -g 7 --xlim 1 50000
+	
