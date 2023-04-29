@@ -1,0 +1,52 @@
+#Based on the *bed file (e.g. ZFST_5_North_South.bed), one can cross reference it to identify overlapping genes
+
+
+# 1. run the python script below to keep the PBS value
+
+
+nano select_columns_2.py 
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jan  2 18:23:32 2022
+
+@author: nic
+"""
+from os import chdir, getcwd
+wd=getcwd()
+chdir(wd)
+
+file= open('ZFST_5_North_1980_2020.bed', 'r', encoding = 'utf-8')
+outfile=open('ZFST_5_North_1980_2020_reformatted.bed','w',encoding = 'utf-8')
+for line in file:
+    #print(line)
+        list = line.strip().split('\t')
+        coord=list[1]
+        chrom=list[0]
+        ZFST=list[8]
+        coordlist = coord.split(')(')
+        #print(coordlist)
+        start_end=coordlist[2].split(',')
+        #print(start_end)
+        start=start_end[0]
+        end=start_end[1].strip(')')
+        #print(start)
+        #print(end)
+        content=str(chrom + '\t' + start + '\t' + end + '\t' + ZFST + '\n')
+        outfile.write(content)
+outfile.close()
+
+file.close()
+
+###############
+
+# 2. find hits
+
+module load bioinfo-tools BEDTools/2.29.2
+annotation='Odocoileus_hemionus_HiC.fasta_v2.functional.gff3'
+
+#use -wb to get the 4th column with the PBS value
+bedtools intersect -a $annotation -b ZFST_5_North_South_reformatted.bed -wb > matches
+
